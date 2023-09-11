@@ -25,12 +25,33 @@ if($_SERVER['REQUEST_METHOD'] == 'GET'){
     // Recibimos los datos enviados
     $postBody = file_get_contents("php://input");
     // Enviamos los datos al manejador
-    $resp = $_pacientes->post($postBody);
-    print_r($resp);
-
+    $datosArray = $_pacientes->post($postBody);
+    // devolvemos una respuesta
+    header('Content-Type: aaplication/json');
+    if(isset($datosArray['result']['error_id'])){
+        $responsecode = $datosArray['result']['error_id'];
+        http_response_code($responsecode);
+    }else{
+        http_response_code(200);
+    }
+    echo json_encode($datosArray);
 
 }else if($_SERVER['REQUEST_METHOD'] == 'PUT'){
-    echo "Hola PUT";
+    // recibimos los datos enviados
+    $postBody = file_get_contents('php://input');
+    // enviamos datos al manejador
+    $datosArray = $_pacientes->put($postBody);
+    // devolvemos una respuesta
+    header('Content-Type: aaplication/json');
+    if(isset($datosArray['result']['error_id'])){
+        $responsecode = $datosArray['result']['error_id'];
+        http_response_code($responsecode);
+    }else{
+        http_response_code(200);
+    }
+    echo json_encode($datosArray);
+
+
 }else if($_SERVER['REQUEST_METHOD'] == 'DELETE'){
     echo "Hola DELETE";
 }else{

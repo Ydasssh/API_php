@@ -5,6 +5,14 @@ require_once "respuestas.class.php";
 class pacientes extends conexion{
 
     private $tabla = "pacientes";
+    private $dni = "";
+    private $nombre = "";
+    private $direccion = "";
+    private $codigoPostal = "";
+    private $genero = "";
+    private $telefono = "";
+    private $fechaNacimiento = "0000-00-00";
+    private $correo = "";
 
     public function listaPacientes($pagina = 1){
         $inicio = 0;
@@ -19,8 +27,55 @@ class pacientes extends conexion{
         return ($datos);
     }
 
+    public function obtenerPaciente($id){
+        
+        $query = "SELECT * FROM ". $this -> tabla . " WHERE PacienteId = '$id'";
+        return parent::obtenerDatos($query);
+    }
 
+    // Manejador
+    public function post($json){
+        $_respuestas = new respuestas;
+        $datos = json_decode($json,true);
 
+        // Validar campos
+        if(!isset($datos['nombre']) || !isset($datos['correo']) || !isset($datos['dni'])){
+            return $_respuestas->error_400();
+        }else{
+            $this->nombre = $datos['nombre'];
+            $this->dni = $datos['dni'];
+            $this->correo = $datos['correo'];
+
+            if(isset($datos['telefono'])){$this->telefono = $datos['telefono'];}
+            if(isset($datos['direccion'])){$this->direccion = $datos['direccion'];}
+            if(isset($datos['codigoPostal'])){$this->codigoPostal = $datos['codigoPostal'];}
+            if(isset($datos['genero'])){$this->genero = $datos['genero'];}
+            if(isset($datos['fechaNacimiento'])){$this->fechaNacimiento = $datos['fechaNacimiento'];}
+            $resp = $this->insertarPaciente();
+            if($resp){
+                $respuesta = $_respuestas->response;
+                $respuesta['result'] = array(
+                    "pacienteId" => $resp
+                );
+                return $resp;
+            }else{
+                return $_respuestas->error_500();
+            }
+        }
+    }
+
+    private function insertarPaciente(){
+        $query = "INSERT INTO " . $this -> tabla . " (DNI, Nombre,Direccion,CodigoPostal,Telefono,Genero,FechaNacimiento,Correo)
+        values
+        ('" . $this->dni . "','" .$this->nombre . "','" . $this->direccion ."','" . $this->codigoPostal . "' , '" . $this->telefono . "','" . $this->genero . "', '" . $this->fechaNacimiento . "','" . $this->correo ."')";
+        $resp = parent::nonQueryId($query);
+        if($resp){
+            return $resp;
+        }else{
+            return 0;
+        }
+
+    }
 
 
 
